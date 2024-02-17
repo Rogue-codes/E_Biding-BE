@@ -24,6 +24,7 @@
     "mongodb": "^6.3.0",
     "mongoose": "^8.1.1",
     "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.9",
     "nodemon": "^3.0.3",
     "postmark": "^4.0.2",
@@ -33,6 +34,7 @@
   "devDependencies": {
     "@types/cookie-parser": "^1.4.6",
     "@types/morgan": "^1.9.9",
+    "@types/multer": "^1.4.11",
     "@types/nodemailer": "^6.4.14",
     "i": "^0.3.7",
     "npm": "^10.4.0"
