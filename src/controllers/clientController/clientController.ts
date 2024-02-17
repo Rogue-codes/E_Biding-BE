@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
-import Client from "../../models/clientModel";
-
+import Client, { TClient } from "../../models/clientModel";
+import { genOTP } from "../../helpers/genOTP";
+import bcrypt from "bcryptjs";
+import { sendVerificationCodeEmail } from "../../service/emailService/email";
 interface IClientBody {
   companyName: string;
   companyAddress: string;
@@ -11,11 +13,11 @@ interface IClientBody {
   name: string;
   email: string;
   password: string;
+  confirmPassword: string;
 }
 
 export const createClient = async (req: Request, res: Response) => {
   try {
-    console.log(req.body);
     const {
       companyName,
       companyAddress,
@@ -26,7 +28,52 @@ export const createClient = async (req: Request, res: Response) => {
       name,
       email,
       password,
+      confirmPassword,
     }: IClientBody = req.body;
+
+    const requiredFields = [
+      "companyName",
+      "companyAddress",
+      "phoneNumber",
+      "alternatePhoneNumber",
+      "RcNumber",
+      "postalCode",
+      "name",
+      "email",
+      "password",
+      "confirmPassword",
+    ];
+
+    const missingFields: string[] = [];
+
+    requiredFields.forEach((field) => {
+      if (!req.body[field]) {
+        missingFields.push(field);
+      }
+    });
+
+    if (missingFields.length > 0) {
+      return res.status(400).json({
+        status: "Failed",
+        message: `Missing Required fields: ${missingFields.join(", ")}`,
+      });
+    }
+
+    // compare password and confirm password
+    if (password !== confirmPassword) {
+      return res.status(400).json({
+        status: "Failed",
+        message: "password and confirm password must match",
+      });
+    }
+
+    // phone number and alternate phone number must not match
+    if (phoneNumber === alternatePhoneNumber) {
+      return res.status(400).json({
+        status: "Failed",
+        message: "Phone number and alternate phone number can not be the same",
+      });
+    }
 
     // check if company name exists
     const alreadyExistingCompanyName = await Client.findOne({
@@ -88,8 +135,17 @@ export const createClient = async (req: Request, res: Response) => {
     we go ahead and create a new client
     */
 
+    // generate randone verification code.
+    const verificationCode = genOTP();
+    const salt = await bcrypt.genSalt(10);
+    const hashedVerificationCode = await bcrypt.hash(verificationCode, salt);
 
-    const newClient = await Client.create({
+    // set verification code expires in to 10 mins
+    const verifictaionCodeExpiration = new Date(
+      Date.now() + 1000 * 60 * 60 * 24
+    );
+
+    const newClient: TClient = await Client.create({
       companyName,
       companyAddress,
       phoneNumber,
@@ -99,12 +155,29 @@ export const createClient = async (req: Request, res: Response) => {
       name,
       email,
       password,
-      cacDoc: req.file?.path
+      cacDoc: req.file?.path,
+      verificationCode: hashedVerificationCode,
+      verificationCodeExpiresIn: verifictaionCodeExpiration,
     });
+
+    // send verification code to email
+    sendVerificationCodeEmail(email, verificationCode, name);
+    // Create a new object without the password field
+    const { password: _, ...clientWithoutPassword } = newClient;
     res.status(201).json({
       status: "Success",
       message: "Registration successful",
-      data: newClient,
+      data: {
+        companyName: newClient.companyName,
+        companyAddress: newClient.companyAddress,
+        phoneNumber: newClient.phoneNumber,
+        alternatePhoneNumber: newClient.alternatePhoneNumber,
+        RcNumber: newClient.RcNumber,
+        postalCode: newClient.postalCode,
+        name: newClient.name,
+        email: newClient.email,
+        cacDoc: newClient.cacDoc,
+      },
     });
   } catch (error: any) {
     console.log(error);

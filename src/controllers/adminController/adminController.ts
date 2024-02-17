@@ -1,11 +1,5 @@
 import { Request, Response } from "express";
 import Admin from "../../models/adminModel";
-import {
-  sendAdminWelcomeEmail,
-  sendChangeAdminPasswordEmail,
-} from "../../service/emailService/email";
-import { genOTP } from "../../helpers/genOTP";
-import bcrypt from "bcryptjs";
 import { genToken } from "../../helpers/genToken";
 
 export const createAdmin = async (req: Request, res: Response) => {

@@ -13,13 +13,10 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export const sendChangeAdminPasswordEmail = async (
+export const sendVerificationCodeEmail = async (
   email: string,
   code: string,
-  first_name: string,
-  last_name: string,
-  username: string,
-  password: string
+  name: string
 ) => {
   try {
     const options = {
@@ -62,22 +59,17 @@ export const sendChangeAdminPasswordEmail = async (
   </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Welcome to NIGALEX E-BIDING APP Admin Panel!</h1>
-        <p>Hello ${first_name} ${last_name},</p>
-        <p>Your admin account on <strong>NIGALEX E-BIDING APP</strong> has been created successfully. To proceed, please use the following token to reset your password.</p>
-        <p>Here are your details:</p>
-        <ul>
-        <li>Username: ${username}</li>
-        <li>Password: ${password}</li>
-        </ul>
-        <p>Please note that you'll be prompted to change your password.</p>
-        <p><strong>Token:</strong> ${code}</p>
-        <p>If you did not request this change, please ignore this email or contact our support team.</p>
-        </div>
-        <div class="footer">
-        <p>NIGALEX E-BIDING APP &copy; 2024. All rights reserved.</p>
-    </div>
+<div class="container">
+    <h3>Welcome to NIGALEX E-BIDING APP !</h3>
+    <p>Hello ${name},</p>
+    <p>Your account on <strong>NIGALEX E-BIDING APP</strong> has been created successfully. To proceed, please verify your email address:</p>
+    <p>Verification Token: <strong>${code}</strong></p>
+    <p>If you did not request this account creation, please ignore this email or contact our support team immediately.</p>
+    <p>Thank you!</p>
+</div>
+<div class="footer">
+    <p>NIGALEX E-BIDING APP &copy; 2024. All rights reserved.</p>
+</div>
 </body>
 </html>
       `,
@@ -93,7 +85,7 @@ export const sendChangeAdminPasswordEmail = async (
 export const sendAdminWelcomeEmail = async (
   email: string,
   first_name: string,
-  last_name: string,
+  last_name: string
 ) => {
   try {
     const options = {

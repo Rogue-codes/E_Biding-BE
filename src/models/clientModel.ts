@@ -12,6 +12,10 @@ export type TClient = {
   email: string;
   cacDoc: string;
   password: string;
+  isVerified: boolean;
+  verificationCode: string;
+  verificationCodeExpiresIn: Date;
+  status: "pending" | "approved";
 };
 
 const clientSchema = new mongoose.Schema({
@@ -58,6 +62,22 @@ const clientSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  isVerified: {
+    type: Boolean,
+    default: false,
+  },
+  verificationCode: {
+    type: String,
+  },
+  verificationCodeExpiresIn: {
+    type: Date,
+  },
+  status: {
+    type: String,
+    enum: ["pending", "approved"],
+    required: true,
+    default: "pending"
+  },
 });
 
 clientSchema.methods.confirmPassword = async function (password: string) {
@@ -68,8 +88,14 @@ clientSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
     return next();
   }
+
   const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
+
+  if (this.isModified("password")) {
+    this.password = await bcrypt.hash(this.password, salt);
+  }
+
+  next();
 });
 
 const Client = mongoose.model<TClient>("Client", clientSchema);
