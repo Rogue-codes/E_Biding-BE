@@ -37,7 +37,6 @@ export const getAllClients = async (req: Request, res: Response) => {
 
     // pagination
     const pageQueryParam = req.query.page as string | number;
-    const limitQueryParam = req.query.limit as string | number;
 
     // Parse as number and default to 1 if undefined
     const page: number =
@@ -46,18 +45,15 @@ export const getAllClients = async (req: Request, res: Response) => {
         : pageQueryParam) || 1;
 
     // Parse as number and default to 10 if undefined
-    const limit: number =
-      (typeof limitQueryParam === "string"
-        ? parseInt(limitQueryParam, 10)
-        : limitQueryParam) || 10;
+    const limit: number = 4; // Set limit to 4
 
     const skip = (page - 1) * limit;
     query = query.skip(skip).limit(limit);
 
     const clientCount = await Client.countDocuments(query.getQuery());
-    const last_page = clientCount / limit;
+    let last_page = Math.ceil(clientCount / limit); // Round up to the nearest integer
     if (req.query.page) {
-      if (page >= last_page) throw new Error("This page does not exist");
+      if (page > last_page) throw new Error("This page does not exist");
     }
 
     const allClients = await query.select("-__v");
@@ -78,7 +74,7 @@ export const getAllClients = async (req: Request, res: Response) => {
         total: clientCount,
       },
     });
-  } catch (error:any) {
+  } catch (error: any) {
     return res.status(500).json({
       status: "Failed",
       message: error.message,
