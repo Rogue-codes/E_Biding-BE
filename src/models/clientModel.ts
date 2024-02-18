@@ -78,7 +78,9 @@ const clientSchema = new mongoose.Schema({
     enum: ["pending", "approved"],
     required: true,
     default: "pending"
-  },
+  }
+},{
+  timestamps: true // Define timestamps option outside the properties object
 });
 
 clientSchema.methods.confirmPassword = async function (password: string) {
