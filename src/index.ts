@@ -7,7 +7,7 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import clientRoute from "./routes/clientRoutes/clientRoute";
 try {
-  mongoose.connect(process.env.CONNECTION_URI as string);
+  mongoose.connect(process.env.CONNECTION_URI as string)
   console.log("mongo db connection established");
 } catch (error) {
   console.log(error);

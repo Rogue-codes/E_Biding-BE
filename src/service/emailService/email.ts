@@ -82,11 +82,7 @@ export const sendVerificationCodeEmail = async (
   }
 };
 
-export const sendAdminWelcomeEmail = async (
-  email: string,
-  first_name: string,
-  last_name: string
-) => {
+export const sendAdminWelcomeEmail = async (email: string, name: string) => {
   try {
     const options = {
       from: "nnamdidanielosuji@gmail.com", // sender address
@@ -128,22 +124,71 @@ export const sendAdminWelcomeEmail = async (
   </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Welcome to NIGALEX E-BIDING APP Admin Panel!</h1>
-        <p>Hello ${first_name} ${last_name},</p>
-        <p>Your admin account on <strong>NIGALEX E-BIDING APP</strong> has been successfully activated.</p>
-        <p>You can now log in to the admin panel using your username and password.</p>
-        <p>If you have any questions or need assistance, please feel free to contact our support team.</p>
-    </div>
-    <div class="footer">
-        <p>NIGALEX E-BIDING APP &copy; 2024. All rights reserved.</p>
-    </div>
+<div class="container">
+<h1>Welcome to NIGALEX E-BIDING APP!</h1>
+<p>Hello ${name},</p>
+<p>Your account on <strong>NIGALEX E-BIDING APP</strong> has been successfully activated.</p>
+<p>You can now log in to our platform and start placing your bids on our amazing products.</p>
+<p>If you have any questions or need assistance, please feel free to contact our support team.</p>
+</div>
+<div class="footer">
+<p>NIGALEX E-BIDING APP &copy; 2024. All rights reserved.</p>
+</div>
 </body>
 
 </html>
       `,
     };
 
+    const info = await transporter.sendMail(options);
+    // callback(info);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const sendForgotPasswordEmail = async (
+  email: string,
+  token: string,
+  name: string
+) => {
+  try {
+    const options = {
+      from: "nnamdidanielosuji@gmail.com", // sender address
+      to: email, // receiver email
+      subject: "Reset Your Password", // Subject line
+      html: `
+        <p>Hello, ${name}</p>
+        <p>We received a request to reset your password for your account on <strong>NIGALEX E-BIDING App</strong>.</p>
+        <p>Please use this token to reset your password:</p>
+        <p><strong>${token}</strong></p>
+        <p>If you did not make this request, you can ignore this email.</p>
+        <p>Thank you!</p>
+      `,
+    };
+    const info = await transporter.sendMail(options);
+    // callback(info);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const sendPasswordResetSuccessEmail = async (
+  email: string,
+  name: string
+) => {
+  try {
+    const options = {
+      from: "nnamdidanielosuji@gmail.com", // sender address
+      to: email, // receiver email
+      subject: "Password Reset Successful", // Subject line
+      html: `
+        <p>Hello ${name},</p>
+        <p>Your password has been successfully reset for your account on <strong>NIGALEX E-BIDING App</strong>.</p>
+        <p>If you have any further questions or concerns, please feel free to contact our support team.</p>
+        <p>Thank you for using our services!</p>
+      `,
+    };
     const info = await transporter.sendMail(options);
     // callback(info);
   } catch (error) {

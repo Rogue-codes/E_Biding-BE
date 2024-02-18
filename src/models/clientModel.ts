@@ -13,9 +13,10 @@ export type TClient = {
   cacDoc: string;
   password: string;
   isVerified: boolean;
-  verificationCode: string;
-  verificationCodeExpiresIn: Date;
+  verificationCode: string | null;
+  verificationCodeExpiresIn: Date |  null;
   status: "pending" | "approved";
+  confirmPassword: (password: string) => boolean
 };
 
 const clientSchema = new mongoose.Schema({
