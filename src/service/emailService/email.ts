@@ -195,3 +195,27 @@ export const sendPasswordResetSuccessEmail = async (
     console.error(error);
   }
 };
+
+export const sendAccountApprovedEmail = async (email: string, name: string) => {
+  try {
+    const options = {
+      from: "nnamdidanielosuji@gmail.com", // sender address
+      to: email, // receiver email
+      subject: "Account Approved", // Subject line
+      html: `
+      <div style="font-family: Arial, sans-serif; color: #333; background-color: #f9f9f9; padding: 20px; border-radius: 5px; max-width: 600px; margin: 0 auto;">
+      <p style="font-size: 16px;">Hello ${name},</p>
+      <p style="font-size: 16px;">Your account on <strong style="color: #007bff;">NIGALEX E-BIDDING App</strong> has been successfully approved!</p>
+      <p style="font-size: 16px;">You can now start placing bids on our platform and participate in auctions.</p>
+      <p style="font-size: 16px;">If you have any questions or need assistance, please feel free to contact our support team.</p>
+      <p style="font-size: 16px;">Thank you for choosing <strong style="color: #007bff;">NIGALEX E-BIDDING App</strong>!</p>
+      </div>
+
+      `,
+    };
+    const info = await transporter.sendMail(options);
+    // callback(info);
+  } catch (error) {
+    console.error(error);
+  }
+};

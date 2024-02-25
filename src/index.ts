@@ -7,7 +7,7 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import clientRoute from "./routes/clientRoutes/clientRoute";
 try {
-  mongoose.connect(process.env.CONNECTION_URI as string)
+  mongoose.connect(process.env.CONNECTION_URI as string);
   console.log("mongo db connection established");
 } catch (error) {
   console.log(error);
@@ -16,7 +16,16 @@ try {
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+
+// Enable CORS middleware
+app.use(cors({
+  origin: 'http://localhost:5173', 
+  credentials: true,
+}));
+
+// Handle preflight requests
+app.options('*', cors());
+
 app.use(morgan("dev"));
 app.use(cookieParser());
 

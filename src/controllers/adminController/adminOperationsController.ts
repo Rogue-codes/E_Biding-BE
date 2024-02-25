@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import Client from "../../models/clientModel";
+import { sendAccountApprovedEmail } from "../../service/emailService/email";
 
 export const getAllClients = async (req: Request, res: Response) => {
   try {
@@ -45,7 +46,7 @@ export const getAllClients = async (req: Request, res: Response) => {
         : pageQueryParam) || 1;
 
     // Parse as number and default to 10 if undefined
-    const limit: number = 4; // Set limit to 4
+    const limit: number = 8; // Set limit to 4
 
     const skip = (page - 1) * limit;
     query = query.skip(skip).limit(limit);
@@ -56,7 +57,7 @@ export const getAllClients = async (req: Request, res: Response) => {
       if (page > last_page) throw new Error("This page does not exist");
     }
 
-    const allClients = await query.select("-__v");
+    const allClients = await query.select("-__v,password");
     if (!allClients.length) {
       return res.status(200).json({
         status: "success",
@@ -76,6 +77,83 @@ export const getAllClients = async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     return res.status(500).json({
+      status: "Failed",
+      message: error.message,
+    });
+  }
+};
+
+export const getClientById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({
+        status: "Failed",
+        message: "Id is required",
+      });
+    }
+
+    const client = await Client.findById(id).select("-password");
+
+    if (!client) {
+      return res.status(404).json({
+        status: "Failed",
+        message: "Client not found",
+      });
+    }
+
+    res.status(200).json({
+      status: "Success",
+      message: "client retrieved successfully",
+      data: client,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      status: "Failed",
+      message: error.message,
+    });
+  }
+};
+
+export const approveClient = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({
+        status: "Failed",
+        message: "Id is required",
+      });
+    }
+
+    const client = await Client.findById(id).select("-password");
+
+    if (!client) {
+      return res.status(404).json({
+        status: "Failed",
+        message: "Client not found",
+      });
+    }
+
+    if(client.status === "approved"){
+      return res.status(400).json({
+        status: "Failed",
+        message:"account already approved",
+      })
+    }
+
+    client.status = "approved";
+
+    await client.save();
+
+    sendAccountApprovedEmail(client.email, client.name);
+
+    res.status(201).json({
+      status: "Success",
+      message: `${client.name}'s account Approved successfully`,
+    });
+  } catch (error: any) {
+    res.status(500).json({
       status: "Failed",
       message: error.message,
     });
