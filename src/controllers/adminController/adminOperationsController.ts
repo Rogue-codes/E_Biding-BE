@@ -1,6 +1,10 @@
 import { Request, Response } from "express";
 import Client from "../../models/clientModel";
-import { sendAccountApprovedEmail } from "../../service/emailService/email";
+import {
+  sendAccountApprovedEmail,
+  sendAccountRejectionEmail,
+} from "../../service/emailService/email";
+import fs from "fs";
 
 export const getAllClients = async (req: Request, res: Response) => {
   try {
@@ -135,11 +139,11 @@ export const approveClient = async (req: Request, res: Response) => {
       });
     }
 
-    if(client.status === "approved"){
+    if (client.status === "approved") {
       return res.status(400).json({
         status: "Failed",
-        message:"account already approved",
-      })
+        message: "account already approved",
+      });
     }
 
     client.status = "approved";
@@ -153,6 +157,95 @@ export const approveClient = async (req: Request, res: Response) => {
       message: `${client.name}'s account Approved successfully`,
     });
   } catch (error: any) {
+    res.status(500).json({
+      status: "Failed",
+      message: error.message,
+    });
+  }
+};
+
+export const rejectClient = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({
+        status: "Failed",
+        message: "Id is required",
+      });
+    }
+
+    const client = await Client.findById(id).select("-password");
+
+    if (!client) {
+      return res.status(404).json({
+        status: "Failed",
+        message: "Client not found",
+      });
+    }
+
+    if (client.status === "approved") {
+      return res.status(400).json({
+        status: "Failed",
+        message: "account already approved",
+      });
+    }
+
+    await Client.findByIdAndDelete(id);
+
+    sendAccountRejectionEmail(client.email, client.name);
+
+    res.status(200).json({
+      status: "Success",
+      message: `${client.name}'s account rejected successfully`,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      status: "Failed",
+      message: error.message,
+    });
+  }
+};
+
+export const downloadPDF = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({
+        status: "Failed",
+        message: "Id is required",
+      });
+    }
+    const client = await Client.findById(id);
+    if (!client) {
+      return res.status(404).json({
+        status: "Failed",
+        message: "Client not found",
+      });
+    }
+
+    const filePath = `/uploads/${client.cacDoc}`;
+
+    console.log("File Path:", filePath);
+
+
+    if (!fs.existsSync(filePath)) {
+      console.log(filePath)
+      return res.status(404).json({
+        status: false,
+        message: "File not found",
+      });
+    }
+
+    res.download(filePath, client.cacDoc, (err) => {
+      if (err) {
+        return res.status(500).json({
+          status: false,
+          message: "Unable to download the PDF file",
+        });
+      }
+    });
+  } catch (error:any) {
     res.status(500).json({
       status: "Failed",
       message: error.message,
