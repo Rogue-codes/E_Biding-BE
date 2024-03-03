@@ -10,6 +10,11 @@ export const getAllClients = async (req: Request, res: Response) => {
   try {
     let query = Client.find({ isVerified: true });
 
+    // Add filter by approval status if status query parameter is provided
+    if (req.query.status === "pending") {
+      query = query.find({ status: "pending" });
+    }
+
     // Check if there is a search query
     if (req.query.search) {
       const searchRegex = new RegExp(req.query.search as string, "i");
