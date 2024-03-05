@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import Admin from "../../models/adminModel";
+import Admin, { TAdmin } from "../../models/adminModel";
 import { genToken } from "../../helpers/genToken";
 
 export const createAdmin = async (req: Request, res: Response) => {
@@ -135,4 +135,26 @@ export const adminLogin = async (req: Request, res: Response) => {
     });
     console.log(error);
   }
+};
+
+export const validateToken = (req: Request, res: Response) => {
+  const { admin  }: any = req;
+  console.log(admin);
+  res.status(200).json({
+    status: "success",
+    message: "session token is valid",
+    data: req.admin,
+  });
+};
+
+export const adminLogout = (req: Request, res: Response) => {
+  (req: Request, res: Response) => {
+    res.cookie("admin_auth_token", "", {
+      expires: new Date(0),
+    });
+    res.status(200).json({
+      status: "Success",
+      message: "Logout successful",
+    });
+  };
 };

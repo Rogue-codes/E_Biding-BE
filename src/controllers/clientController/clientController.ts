@@ -160,7 +160,7 @@ export const createClient = async (req: Request, res: Response) => {
     we go ahead and create a new client
     */
 
-    // generate randone verification code.
+    // generate random verification code.
     const verificationCode = genOTP();
     const salt = await bcrypt.genSalt(10);
     const hashedVerificationCode = await bcrypt.hash(verificationCode, salt);
