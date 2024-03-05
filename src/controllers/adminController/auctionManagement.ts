@@ -229,9 +229,41 @@ export const getAllAuctions = async (req: Request, res: Response) => {
         total: auctionCount,
       },
     });
-  } catch (error:any) {
+  } catch (error: any) {
     return res.status(500).json({
       status: "Failed",
+      message: error.message,
+    });
+  }
+};
+
+export const getAuctionById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({
+        status: "Failed",
+        message: "ID is required",
+      });
+    }
+
+    const auction = await Auction.findById(id);
+    if (!auction) {
+      return res.status(404).json({
+        status: "Failed",
+        message: "Auction does not exist",
+      });
+    }
+
+    res.status(200).json({
+      status: "success",
+      message: "Auction retrieved successfully",
+      data: auction,
+    });
+  } catch (error: any) {
+    console.log(error);
+    res.status(500).json({
+      status: "error",
       message: error.message,
     });
   }
